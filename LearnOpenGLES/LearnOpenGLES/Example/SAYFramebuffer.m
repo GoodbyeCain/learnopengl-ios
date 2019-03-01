@@ -9,17 +9,30 @@
 #import "SAYFramebuffer.h"
 #import "SAYUtil.h"
 
-@implementation SAYFramebuffer
+@implementation SAYFramebuffer {
+    GLuint _framebuffer;
+    GLuint _cubeVAO, _cubeVBO;
+    GLuint _planeVAO, _planeVBO;
+    GLuint _quadVAO, _quadVBO;
+    
+    GLuint _textureColorbuffer;
+    
+    SAYShader *_shader;
+    SAYShader *_screenShader;
+    
+    GLuint _cubeTexture;
+    GLuint _floorTexture;
+}
 
 - (BOOL)useCamera {
     return YES;
 }
 
-- (void)startDrawLogic:(SAYCamera *) camera inView:(GLKView *) theGLKView{
-    self.shader1 = [[SAYShader alloc] initWithVertexShaderFileName:@"depth_testing"
-                                            fragmentShaderFileName:@"depth_testing"];
-    self.shader2 = [[SAYShader alloc] initWithVertexShaderFileName:@"framebuffer"
-                                            fragmentShaderFileName:@"framebuffer"];
+- (void)parpareDrawWithCamera:(SAYCamera *) camera inView:(GLKView *) view {
+    _shader = [[SAYShader alloc] initWithVertexShaderFileName:@"depth_testing"
+                                       fragmentShaderFileName:@"depth_testing"];
+    _screenShader = [[SAYShader alloc] initWithVertexShaderFileName:@"framebuffer"
+                                              fragmentShaderFileName:@"framebuffer"];
     
     float cubeVertices[] = {
         // positions          // texture Coords
@@ -86,61 +99,56 @@
         1.0f,  1.0f,  1.0f, 1.0f
     };
     // cube VAO
-    GLuint cubeVAO, cubeVBO;
-    glGenVertexArrays(1, &cubeVAO);
-    glGenBuffers(1, &cubeVBO);
-    glBindVertexArray(cubeVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    glGenVertexArrays(1, &_cubeVAO);
+    glGenBuffers(1, &_cubeVBO);
+    glBindVertexArray(_cubeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, _cubeVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     // plane VAO
-    GLuint planeVAO, planeVBO;
-    glGenVertexArrays(1, &planeVAO);
-    glGenBuffers(1, &planeVBO);
-    glBindVertexArray(planeVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+    glGenVertexArrays(1, &_planeVAO);
+    glGenBuffers(1, &_planeVBO);
+    glBindVertexArray(_planeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, _planeVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     // screen quad VAO
-    GLuint quadVAO, quadVBO;
-    glGenVertexArrays(1, &quadVAO);
-    glGenBuffers(1, &quadVBO);
-    glBindVertexArray(quadVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glGenVertexArrays(1, &_quadVAO);
+    glGenBuffers(1, &_quadVBO);
+    glBindVertexArray(_quadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, _quadVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
     
-    GLuint cubeTexture = [SAYUtil uploadImageWithName:@"marble"];
-    GLuint floorTexture = [SAYUtil uploadImageWithName:@"metal"];
+    _cubeTexture = [SAYUtil uploadImageWithName:@"marble"];
+    _floorTexture = [SAYUtil uploadImageWithName:@"metal"];
     
-    [self.shader1 use];
-    [self.shader1 uniform1i:@"texture1" value:0];
+    [_shader use];
+    [_shader uniform1i:@"texture1" value:0];
     
-    [self.shader2 use];
-    [self.shader2 uniform1i:@"screenTexture" value:0];
+    [_screenShader use];
+    [_screenShader uniform1i:@"screenTexture" value:0];
     
     // framebuffer configuration
     // -------------------------
-    unsigned int framebuffer;
-    glGenFramebuffers(1, &framebuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glGenFramebuffers(1, &_framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
     // create a color attachment texture
-    unsigned int textureColorbuffer;
-    glGenTextures(1, &textureColorbuffer);
-    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+    glGenTextures(1, &_textureColorbuffer);
+    glBindTexture(GL_TEXTURE_2D, _textureColorbuffer);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _textureColorbuffer, 0);
     // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
     unsigned int rbo;
     glGenRenderbuffers(1, &rbo);
@@ -156,63 +164,72 @@
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     
     glEnable(GL_DEPTH_TEST);
+}
+
+- (void)drawWithCamera:(SAYCamera *) camera inView:(GLKView *) theGLKView; {
+    // bind to framebuffer and draw scene as we normally would to color texture
+    glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
+    glEnable(GL_DEPTH_TEST); // enable depth testing (is disabled for rendering screen-space quad)
     
-    __weak SAYCamera *wCamera = camera;
-    __weak GLKView *glkView = (GLKView *)theGLKView;
-    __weak SAYShader *wShader1 = self.shader1;
-    __weak SAYShader *wShader2 = self.shader2;
-    self.drawCycle = ^{
-        // render
-        // ------
-        // bind to framebuffer and draw scene as we normally would to color texture
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-        glEnable(GL_DEPTH_TEST); // enable depth testing (is disabled for rendering screen-space quad)
-        
-        // make sure we clear the framebuffer's content
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-        [wShader1 use];
-        GLKMatrix4 model = GLKMatrix4Identity;
-        GLKMatrix4 view = [wCamera viewMatrix];
-        GLKMatrix4 projection = GLKMatrix4MakePerspective(wCamera.fovyRadians, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1, 100.0f);
-        [wShader1 uniformMat4:@"view" mat:view];
-        [wShader1 uniformMat4:@"projection" mat:projection];
-        
-        // cubes
-        glBindVertexArray(cubeVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, cubeTexture);
-        model = GLKMatrix4Translate(model, 0.0f, 0.0f, -1.0f);
-        [wShader1 uniformMat4:@"model" mat:model];
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        
-        model = GLKMatrix4Identity;
-        model = GLKMatrix4Translate(model, -1.0f, 0.0f, -0.0f);
-        [wShader1 uniformMat4:@"model" mat:model];
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        
-        // floor
-        glBindVertexArray(planeVAO);
-        glBindTexture(GL_TEXTURE_2D, floorTexture);
-        [wShader1 uniformMat4:@"model" mat:GLKMatrix4Identity];
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
-        
-        // now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
-        [glkView bindDrawable];
-        //glBindFramebuffer(GL_FRAMEBUFFER, 2);
-        glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
-        // clear all relevant buffers
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
-        glClear(GL_COLOR_BUFFER_BIT);
-        
-        [wShader2 use];
-        glBindVertexArray(quadVAO);
-        glBindTexture(GL_TEXTURE_2D, textureColorbuffer);    // use the color attachment texture as the texture of the quad plane
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        
-    };
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);// make sure we clear the framebuffer's content
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    [_shader use];
+    GLKMatrix4 model = GLKMatrix4Identity;
+    GLKMatrix4 view = [camera viewMatrix];
+    GLKMatrix4 projection = GLKMatrix4MakePerspective(camera.fovyRadians, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1, 100.0f);
+    [_shader uniformMat4:@"view" mat:view];
+    [_shader uniformMat4:@"projection" mat:projection];
+    
+    // cubes
+    glBindVertexArray(_cubeVAO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, _cubeTexture);
+    model = GLKMatrix4Translate(model, 0.0f, 0.0f, -1.0f);
+    [_shader uniformMat4:@"model" mat:model];
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    
+    model = GLKMatrix4Identity;
+    model = GLKMatrix4Translate(model, -1.0f, 0.0f, -0.0f);
+    [_shader uniformMat4:@"model" mat:model];
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    
+    // floor
+    glBindVertexArray(_planeVAO);
+    glBindTexture(GL_TEXTURE_2D, _floorTexture);
+    [_shader uniformMat4:@"model" mat:GLKMatrix4Identity];
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+    
+    // now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
+    [theGLKView bindDrawable];
+    //glBindFramebuffer(GL_FRAMEBUFFER, 2);
+    glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
+    // clear all relevant buffers
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    [_screenShader use];
+    glBindVertexArray(_quadVAO);
+    glBindTexture(GL_TEXTURE_2D, _textureColorbuffer);    // use the color attachment texture as the texture of the quad plane
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+- (void)drawFinished {
+    glDeleteVertexArrays(1, &_cubeVAO);
+    glDeleteBuffers(1, &_cubeVBO);
+    
+    glDeleteVertexArrays(1, &_planeVAO);
+    glDeleteBuffers(1, &_planeVBO);
+    
+    glDeleteVertexArrays(1, &_planeVAO);
+    glDeleteBuffers(1, &_planeVBO);
+    
+    glDeleteFramebuffers(1, &_framebuffer);
+    glDeleteTextures(1, &_cubeTexture);
+    glDeleteTextures(1, &_floorTexture);
+    glDeleteTextures(1, &_textureColorbuffer);
+
 }
 
 @end

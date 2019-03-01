@@ -20,9 +20,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)useCamera;
 
 @required
-- (void)startDrawLogic:(SAYCamera *) camera inView:(GLKView *) theGLKView;
-@property (nonatomic, copy) void(^drawCycle)(void);
-@property (nonatomic, copy) void(^resourcesClean)(void);
+- (void)parpareDrawWithCamera:(SAYCamera *) camera inView:(GLKView *) view;
+- (void)drawWithCamera:(SAYCamera *) camera inView:(GLKView *) view;
+- (void)drawFinished;
 
 @end
 

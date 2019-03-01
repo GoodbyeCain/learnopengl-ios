@@ -20,21 +20,10 @@
     }
 }
 
-- (instancetype)initWithVertexShaderFileName:(NSString *) vShaderFileName
-                      fragmentShaderFileName:(NSString *) fShaderFileName {
+- (instancetype)initWithVertexShaderString:(NSString *) vShaderString
+                      fragmentShaderString:(NSString *) fShaderString {
     self = [super init];
     if (self) {
-        NSString *vFullPath = [[NSBundle mainBundle] pathForResource:vShaderFileName
-                                                                  ofType:@"vsh"];
-        NSString *vShaderString = [NSString stringWithContentsOfFile:vFullPath
-                                                            encoding:NSUTF8StringEncoding
-                                                               error:nil];
-        NSString *fFullPath = [[NSBundle mainBundle] pathForResource:fShaderFileName
-                                                              ofType:@"fsh"];
-        NSString *fShaderString = [NSString stringWithContentsOfFile:fFullPath
-                                                            encoding:NSUTF8StringEncoding
-                                                               error:nil];
-        
         _program = glCreateProgram();
         
         GLuint vertexShader, fragmentShader;
@@ -60,6 +49,22 @@
         glDeleteShader(fragmentShader);
     }
     return self;
+}
+
+- (instancetype)initWithVertexShaderFileName:(NSString *) vShaderFileName
+                      fragmentShaderFileName:(NSString *) fShaderFileName {
+    NSString *vFullPath = [[NSBundle mainBundle] pathForResource:vShaderFileName
+                                                          ofType:@"vsh"];
+    NSString *vShaderString = [NSString stringWithContentsOfFile:vFullPath
+                                                        encoding:NSUTF8StringEncoding
+                                                           error:nil];
+    NSString *fFullPath = [[NSBundle mainBundle] pathForResource:fShaderFileName
+                                                          ofType:@"fsh"];
+    NSString *fShaderString = [NSString stringWithContentsOfFile:fFullPath
+                                                        encoding:NSUTF8StringEncoding
+                                                           error:nil];
+    
+    return [self initWithVertexShaderString:vShaderString fragmentShaderString:fShaderString];
 }
 
 - (BOOL)compileShader:(GLuint *)shader

@@ -13,6 +13,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface SAYShader : NSObject
+- (instancetype)initWithVertexShaderString:(NSString *) vShaderString
+                      fragmentShaderString:(NSString *) fShaderString;
 - (instancetype)initWithVertexShaderFileName:(NSString *) vShaderFileName
                       fragmentShaderFileName:(NSString *) fShaderFileName;
 @property (nonatomic, readonly) GLuint program;

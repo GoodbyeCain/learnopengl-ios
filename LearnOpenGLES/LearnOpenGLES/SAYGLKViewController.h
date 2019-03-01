@@ -7,12 +7,12 @@
 //
 
 #import <GLKit/GLKit.h>
-#import "SAYExampleBaseClass.h"
+#import "SAYExampleProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface SAYGLKViewController : GLKViewController
-@property (nonatomic, strong) SAYExampleBaseClass *drawInstance;
+@property (nonatomic, strong) id<SAYExampleProtocol> drawInstance;
 @end
 
 NS_ASSUME_NONNULL_END

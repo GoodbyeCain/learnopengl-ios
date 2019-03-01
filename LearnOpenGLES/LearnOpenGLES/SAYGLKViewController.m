@@ -29,14 +29,14 @@
     self.title = NSStringFromClass(self.drawInstance.class);
     
     [self configGLEnvironment];
-    if ([self.drawInstance respondsToSelector:@selector(startDrawLogic:inView:)]) {
-        [self.drawInstance startDrawLogic:_camera inView:(GLKView *)self.view];
+    if ([self.drawInstance respondsToSelector:@selector(parpareDrawWithCamera:inView:)]) {
+        [self.drawInstance parpareDrawWithCamera:_camera inView:(GLKView *)self.view];
     }
 }
 
 - (void)dealloc {
-    if (self.drawInstance.resourcesClean) {
-        self.drawInstance.resourcesClean();
+    if ([self.drawInstance respondsToSelector:@selector(drawFinished)]) {
+        [self.drawInstance drawFinished];
     }
 }
 
@@ -61,8 +61,8 @@
 
 #pragma mark - draw cycle
 - (void)glkView:(GLKView *)view drawInRect:(CGRect)rect{
-    if (self.drawInstance.drawCycle ) {
-        self.drawInstance.drawCycle();
+    if ([self.drawInstance respondsToSelector:@selector(drawWithCamera:inView:)]) {
+        [self.drawInstance drawWithCamera:_camera inView:view];
     }
 }
 
@@ -76,6 +76,7 @@
         _lastPoint = point;
     }
 }
+
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
     CGPoint curr = [touches.anyObject locationInView:self.view];
     if (_rotateStart) {
@@ -86,13 +87,13 @@
             _lastPoint = curr;
         }
     }
-    
-    
 }
+
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
     _rotateStart = NO;
     _lastPoint = CGPointZero;
 }
+
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event {
     _rotateStart = NO;
     _lastPoint = CGPointZero;
@@ -111,4 +112,5 @@
         [_camera processKeyboard:RIGHT withTime:time];
     }
 }
+
 @end

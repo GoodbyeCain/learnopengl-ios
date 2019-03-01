@@ -13,8 +13,17 @@
     return NO;
 }
 
-- (void)startDrawLogic:(SAYCamera *) camera inView:(GLKView *) theGLKView {
+- (void)parpareDrawWithCamera:(SAYCamera *) camera inView:(GLKView *) view {
+    NSLog(@"%@", @"you should support your draw logic");
+}
+
+- (void)drawWithCamera:(SAYCamera *) camera inView:(GLKView *) view {
+    NSLog(@"%@", @"you should support your draw cycle");
+}
+
+- (void)drawFinished {
     
 }
+
 
 @end
