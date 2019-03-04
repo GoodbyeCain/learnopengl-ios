@@ -50,12 +50,4 @@ void main()
         col += sampleTex[i] * kernel[i];
     
     FragColor = vec4(col, 1.0);
-    //vec3 col = vec3(1.0 - texture(screenTexture, TexCoords)); // 反向
-//    vec3 col = texture(screenTexture, TexCoords).rgb;
-//    float avg = (col.r + col.g + col.b) / 3.0;
-//    FragColor = vec4(avg.x, avg.y, avg.z, 1.0);
-    
-//    vec3 col = texture(screenTexture, TexCoords).rgb;
-//    float average = 0.2126 * col.r + 0.7152 * col.g + 0.0722 * col.b;
-//    FragColor = vec4(average, 0.0, 0.0, 1.0);
 }

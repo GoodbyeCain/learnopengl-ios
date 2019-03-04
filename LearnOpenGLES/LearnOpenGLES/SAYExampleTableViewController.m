@@ -47,6 +47,7 @@
     self.title = @"Learn OpenGL ES";
     [self registerExample:@"SAYHelloTriangle"];
     [self registerExample:@"SAYFramebuffer"];
+    [self registerExample:@"SAYCubeMap"];
 }
 
 #pragma mark - Table view data source

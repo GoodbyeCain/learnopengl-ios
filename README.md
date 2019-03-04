@@ -9,7 +9,7 @@
 
 ## How to use ?
 
-* 本项目自带两个示例项目，可直接运行；
+* 本项目自带示例项目，可直接运行；
 * 使用本项目跟随网站教程练习只需两步：
     1. `Example`目录下实例化`SAYExampleBaseClass`子类
     2. `SAYExampleTableViewController`类中注册你的类名
